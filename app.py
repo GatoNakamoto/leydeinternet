@@ -2,6 +2,7 @@ from flask import Flask, request, render_template, redirect, url_for, make_respo
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 from sqlalchemy import desc
+import traceback
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///leyes.db'
@@ -15,7 +16,7 @@ class Ley(db.Model):
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
     votos_si = db.Column(db.Integer, default=0)
     votos_no = db.Column(db.Integer, default=0)
-    estado = db.Column(db.String(20), default='pendiente')  # pendiente, aprobada, denegada
+    estado = db.Column(db.String(20), default='pendiente')
 
     def tiempo_restante(self):
         expiracion = self.fecha_creacion + timedelta(hours=24)
@@ -36,7 +37,10 @@ def index():
     leyes_pendientes = Ley.query.filter_by(estado='pendiente').order_by(desc(Ley.fecha_creacion)).all()
     leyes_aprobadas = Ley.query.filter_by(estado='aprobada').order_by(Ley.id).all()
     leyes_denegadas = Ley.query.filter_by(estado='denegada').order_by(Ley.id).all()
-    return render_template('index.html', leyes=leyes_pendientes, aprobadas=leyes_aprobadas, denegadas=leyes_denegadas)
+    return render_template('index.html',
+                           leyes=leyes_pendientes,
+                           aprobadas=leyes_aprobadas,
+                           denegadas=leyes_denegadas)
 
 @app.route('/proponer', methods=['POST'])
 def proponer():
@@ -62,6 +66,11 @@ def votar(ley_id, opcion):
     response = make_response(redirect(url_for('index')))
     response.set_cookie(cookie_name, '1', max_age=60*60*24*365)
     return response
+
+# Este manejador muestra la traza de cualquier excepción en el navegador
+@app.errorhandler(Exception)
+def handle_exception(e):
+    return "<pre>" + traceback.format_exc() + "</pre>", 500
 
 if __name__ == '__main__':
     with app.app_context():
