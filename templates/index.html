@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>📜 Leyes de Internet</title>
+  <!-- PWA manifest -->
+  <link rel="manifest" href="/static/manifest.json" />
+  <!-- Theme color -->
+  <meta name="theme-color" content="#2196f3" />
+  <style>
+    body { font-family: Arial, sans-serif; background: #f2f2f2; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: auto; padding: 20px; }
+    h1 { text-align: center; font-size: 2rem; margin-bottom: 1rem; }
+    nav { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+    nav button { cursor: pointer; font-weight: bold; color: #444; background: #fff; border: none; padding: 8px 14px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    nav button.active { background: #2196f3; color: white; }
+    .search { margin-bottom: 15px; }
+    .search input { width: 100%; padding: 8px; font-size: 1rem; }
+    .card { position: relative; background: white; border-radius: 10px; padding: 15px; margin-bottom: 20px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    .barra-votos { height: 16px; background: #ddd; border-radius: 6px; margin: 10px 0; position: relative; overflow: hidden; }
+    .barra-si { background: #4caf50; height: 100%; float: left; }
+    .barra-no { background: #f44336; height: 100%; float: right; }
+    .porcentaje { position: absolute; width: 100%; top: 0; text-align: center; font-size: 0.8rem; line-height: 16px; color: white; font-weight: bold; text-shadow: 0 0 2px #000; }
+    .botones { display: flex; justify-content: space-between; gap: 10px; margin-top: 10px; }
+    .boton-si, .boton-no { width: 100%; max-width: 120px; padding: 10px; font-size: 1rem; font-weight: bold; border: none; border-radius: 6px; color: white; cursor: pointer; }
+    .boton-si { background: #4caf50; }
+    .boton-no { background: #f44336; }
+    .share-icon { position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; background: url('data:image/svg+xml;utf8,<svg fill="#555" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.006 3.006 0 000-1.39l7.05-4.11c.54.5 1.25.82 2.04.82 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.11.69L8.06 8.91C7.56 8.41 6.85 8 6 8c-1.66 0-3 1.34-3 3s1.34 3 3 3c.85 0 1.56-.41 2.06-1.02l7.16 4.17c-.07.22-.11.45-.11.69 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/></svg>') no-repeat center center; cursor: pointer; }
+    .seccion { display: none; }
+    .seccion.active { display: block; }
+    form input { width: 100%; padding: 10px; font-size: 1rem; margin-bottom: 10px; }
+    form button { width: 100%; padding: 10px; background: #2196f3; color: white; border: none; border-radius: 6px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📜 Leyes de Internet</h1>
+    <form action="/proponer" method="POST">
+      <input name="ley" type="text" placeholder="Propon una nueva ley... (máx 140 caracteres)" maxlength="140" required />
+      <button type="submit">Propon Ley</button>
+    </form>
+    <nav>
+      <button data-target="aprobadas">🏛️ Leyes Aprobadas</button>
+      <button data-target="votacion">🗳️ En Votación</button>
+      <button data-target="denegadas">🗑️ Leyes Denegadas</button>
+    </nav>
+    <div class="search" id="search-bar" style="display:none;">
+      <input type="number" id="search-input" placeholder="Busca # de ley (ej: 24)" />
+    </div>
+    <div class="seccion" id="votacion">
+      <h3>🗳️ Leyes en Votación</h3>
+      {% for ley in leyes %}
+        <div class="card" id="ley-{{ ley.id }}">
+          <div class="share-icon" onclick="shareLaw({{ ley.id }})"></div>
+          <p><strong>{{ ley.texto }}</strong></p>
+          <p>📅 Se aprobará o rechazará el {{ ley.fecha_aprobacion() }}</p>
+          <div class="barra-votos">
+            {% set total = ley.votos_si + ley.votos_no %}
+            {% set si_pct = (ley.votos_si * 100 / total) if total > 0 else 0 %}
+            {% set no_pct = 100 - si_pct %}
+            <div class="barra-si" style="width: {{ si_pct }}%;"></div>
+            <div class="barra-no" style="width: {{ no_pct }}%;"></div>
+            <div class="porcentaje">{{ si_pct | round(1) }}% / {{ no_pct | round(1) }}%</div>
+          </div>
+          <div class="botones">
+            <a href="/votar/{{ ley.id }}/si"><button class="boton-si">✅ Aceptar</button></a>
+            <a href="/votar/{{ ley.id }}/no"><button class="boton-no">❌ Rechazar</button></a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="seccion" id="aprobadas">
+      <h3>🏛️ Leyes Aprobadas</h3>
+      {% for l in aprobadas %}
+        <div class="card" id="ley-{{ l.id }}">
+          <div class="share-icon" onclick="shareLaw({{ l.id }})"></div>
+          <p><strong>{{ l.titulo_numerado() }}</strong></p>
+          <p>✅ Aprobada con {{ l.porcentaje_aprobacion() }}%</p>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="seccion" id="denegadas">
+      <h3>🗑️ Leyes Denegadas</h3>
+      {% for l in denegadas %}
+        <div class="card" id="ley-{{ l.id }}">
+          <p><strong>{{ l.texto }}</strong></p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/service-worker.js');
+    }
+    const tabs = document.querySelectorAll('nav button');
+    const sections = document.querySelectorAll('.seccion');
+    const searchBar = document.getElementById('search-bar');
+    const searchInput = document.getElementById('search-input');
+    function activate(target) {
+      sections.forEach(s => s.id === target ? s.classList.add('active') : s.classList.remove('active'));
+      tabs.forEach(b => b.dataset.target === target ? b.classList.add('active') : b.classList.remove('active'));
+      searchBar.style.display = target === 'aprobadas' ? 'block' : 'none';
+    }
+    tabs.forEach(btn => btn.addEventListener('click', () => activate(btn.dataset.target)));
+    activate('votacion');
+    function shareLaw(id) {
+      const url = window.location.origin + '/?#ley-' + id;
+      if (navigator.share) navigator.share({ title: 'Ley #'+id, url });
+      else prompt('Copia este enlace:', url);
+    }
+    searchInput.addEventListener('change', () => {
+      const card = document.getElementById('ley-'+searchInput.value);
+      if (card) card.scrollIntoView({ behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>
