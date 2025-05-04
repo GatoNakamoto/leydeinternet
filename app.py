@@ -15,7 +15,7 @@ class Ley(db.Model):
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
     votos_si = db.Column(db.Integer, default=0)
     votos_no = db.Column(db.Integer, default=0)
-    estado = db.Column(db.String(20), default='pendiente')  # pendiente, aprobada, denegada
+    estado = db.Column(db.String(20), default='pendiente')
 
     def tiempo_restante(self):
         expiracion = self.fecha_creacion + timedelta(hours=24)
@@ -42,7 +42,7 @@ def index():
 
 @app.route('/proponer', methods=['POST'])
 def proponer():
-    texto = request.form.get('ley', '').strip()[:140]  # Máximo 140 caracteres
+    texto = request.form.get('ley', '').strip()[:140]
     if texto:
         nueva_ley = Ley(texto=texto)
         db.session.add(nueva_ley)

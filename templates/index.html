@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>📜 Leyes de Internet</title>
-  <!-- PWA manifest -->
+  <title>📜 Ley de Internet</title>
   <link rel="manifest" href="/static/manifest.json" />
-  <!-- Theme color -->
-  <meta name="theme-color" content="#2196f3" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/service-worker.js');
+    }
+  </script>
   <style>
     body { font-family: Arial, sans-serif; background: #f2f2f2; margin: 0; padding: 0; }
     .container { max-width: 600px; margin: auto; padding: 20px; }
@@ -26,7 +28,7 @@
     .boton-si, .boton-no { width: 100%; max-width: 120px; padding: 10px; font-size: 1rem; font-weight: bold; border: none; border-radius: 6px; color: white; cursor: pointer; }
     .boton-si { background: #4caf50; }
     .boton-no { background: #f44336; }
-    .share-icon { position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; background: url('data:image/svg+xml;utf8,<svg fill="#555" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.006 3.006 0 000-1.39l7.05-4.11c.54.5 1.25.82 2.04.82 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.11.69L8.06 8.91C7.56 8.41 6.85 8 6 8c-1.66 0-3 1.34-3 3s1.34 3 3 3c.85 0 1.56-.41 2.06-1.02l7.16 4.17c-.07.22-.11.45-.11.69 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/></svg>') no-repeat center center; cursor: pointer; }
+    .share-icon { position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; background: url('data:image/svg+xml;utf8,<svg fill="%23555" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.006 3.006 0 000-1.39l7.05-4.11c.54.5 1.25.82 2.04.82 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.11.69L8.06 8.91C7.56 8.41 6.85 8 6 8c-1.66 0-3 1.34-3 3s1.34 3 3 3c.85 0 1.56-.41 2.06-1.02l7.16 4.17c-.07.22-.11.45-.11.69 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/></svg>') no-repeat center center; cursor: pointer; }
     .seccion { display: none; }
     .seccion.active { display: block; }
     form input { width: 100%; padding: 10px; font-size: 1rem; margin-bottom: 10px; }
@@ -35,7 +37,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>📜 Leyes de Internet</h1>
+    <h1>📜 Ley de Internet</h1>
     <form action="/proponer" method="POST">
       <input name="ley" type="text" placeholder="Propon una nueva ley... (máx 140 caracteres)" maxlength="140" required />
       <button type="submit">Propon Ley</button>
@@ -90,9 +92,6 @@
     </div>
   </div>
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/static/service-worker.js');
-    }
     const tabs = document.querySelectorAll('nav button');
     const sections = document.querySelectorAll('.seccion');
     const searchBar = document.getElementById('search-bar');
@@ -106,11 +105,11 @@
     activate('votacion');
     function shareLaw(id) {
       const url = window.location.origin + '/?#ley-' + id;
-      if (navigator.share) navigator.share({ title: 'Ley #'+id, url });
+      if (navigator.share) navigator.share({ title: 'Ley #' + id, url });
       else prompt('Copia este enlace:', url);
     }
     searchInput.addEventListener('change', () => {
-      const card = document.getElementById('ley-'+searchInput.value);
+      const card = document.getElementById('ley-' + searchInput.value);
       if (card) card.scrollIntoView({ behavior: 'smooth' });
     });
   </script>
