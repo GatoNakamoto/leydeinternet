@@ -59,7 +59,7 @@
           <p>📅 Se aprobará o rechazará el {{ ley.fecha_aprobacion() }}</p>
           <div class="barra-votos">
             {% set total = ley.votos_si + ley.votos_no %}
-            {% set si_pct = (ley.votos_si * 100 / total) if total > 0 else 0 %}
+            {% set si_pct = ley.votos_si * 100 / total if total > 0 else 0 %}
             {% set no_pct = 100 - si_pct %}
             <div class="barra-si" style="width: {{ si_pct }}%;"></div>
             <div class="barra-no" style="width: {{ no_pct }}%;"></div>
@@ -109,7 +109,7 @@
       else prompt('Copia este enlace:', url);
     }
     searchInput.addEventListener('change', () => {
-      const card = document.getElementById('ley-' + searchInput.value);
+      const card = document.getElementById('ley-'+searchInput.value);
       if (card) card.scrollIntoView({ behavior: 'smooth' });
     });
   </script>
