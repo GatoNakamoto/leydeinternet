@@ -15,7 +15,7 @@ class Ley(db.Model):
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
     votos_si = db.Column(db.Integer, default=0)
     votos_no = db.Column(db.Integer, default=0)
-    estado = db.Column(db.String(20), default='pendiente')
+    estado = db.Column(db.String(20), default='pendiente')  # pendiente, aprobada, denegada
 
     def tiempo_restante(self):
         expiracion = self.fecha_creacion + timedelta(hours=24)
@@ -24,21 +24,19 @@ class Ley(db.Model):
     def fecha_aprobacion(self):
         return (self.fecha_creacion + timedelta(hours=24)).strftime("%d/%m/%Y %H:%M")
 
+    def titulo_numerado(self):
+        return f"#{self.id} Ley de Internet: {self.texto}"
+
     def porcentaje_aprobacion(self):
         total = self.votos_si + self.votos_no
         return round((self.votos_si * 100 / total), 1) if total > 0 else 0
-
-    def titulo_numerado(self):
-        return f"#{self.id} Ley de Internet: {self.texto}"
 
 @app.route('/')
 def index():
     leyes_pendientes = Ley.query.filter_by(estado='pendiente').order_by(desc(Ley.fecha_creacion)).all()
     leyes_aprobadas = Ley.query.filter_by(estado='aprobada').order_by(Ley.id).all()
     leyes_denegadas = Ley.query.filter_by(estado='denegada').order_by(Ley.id).all()
-    return render_template('index.html', leyes=leyes_pendientes,
-                                        aprobadas=leyes_aprobadas,
-                                        denegadas=leyes_denegadas)
+    return render_template('index.html', leyes=leyes_pendientes, aprobadas=leyes_aprobadas, denegadas=leyes_denegadas)
 
 @app.route('/proponer', methods=['POST'])
 def proponer():
